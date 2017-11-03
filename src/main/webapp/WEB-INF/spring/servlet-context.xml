@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.3.xsd">
+
+	<mvc:annotation-driven />
+	
+	<!-- 인터셉터에 필요한 설정 -->
+	<mvc:interceptors>
+		<mvc:interceptor>
+			<mvc:mapping path="/*.do"/>
+			<mvc:mapping path="/*/*.do"/>
+			<ref bean="loginCheckInterceptor" />
+		</mvc:interceptor>
+	</mvc:interceptors>
+	
+	<util:set id="urlSet" >
+	<!-- 로그인 하지 않아도 사용 가능한 url들을 빈으로 등록 -->
+		<value>/home.do</value>
+		<value>/user/form.do</value>
+		<value>/user/add.do</value>
+		<value>/user/login.do</value>
+		<value>/user/idcheck.do</value>
+		<value>/board/home.do</value>
+		<value>/board/list.do</value>
+		<value>/board/detail.do</value>
+		<value>/board/filedownload.do</value>
+		<value>/board/getComments.do</value>
+	</util:set>
+	<bean id="loginCheckInterceptor" class="com.sample.web.interceptor.LoginCheckInterceptor">
+		<property name="urlSet" ref="urlSet"></property>
+	</bean>
+	
+	
+	<!-- InternalResourceViewResolver -> 뷰의 이름이 .jsp인경우 그 jsp의 이름에 해당하는 경로로 보내줌 -->
+	<bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/WEB-INF/views/" />
+		<property name="suffix" value=".jsp"></property>
+	</bean>
+	
+	<!-- 멀티파트 요청 처리하지만 외부 라이브러리 필요 -->
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="defaultEncoding" value="utf-8" />
+	</bean>
+
+	<bean class="com.sample.web.view.FileDownloadView" />
+	<bean class="com.sample.web.view.ExcelView" />
+	
+	<context:property-placeholder location="classpath:/META-INF/properties/config.properties" />
+	
+	<context:component-scan base-package="com.sample">
+		<context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+		<context:include-filter type="annotation" expression="org.springframework.web.bind.annotation.ControllerAdvice"/>
+		<context:exclude-filter type="annotation" expression="org.springframework.web.bind.annotation.RestController"/>
+		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Service"/>
+	</context:component-scan>
+
+</beans>
